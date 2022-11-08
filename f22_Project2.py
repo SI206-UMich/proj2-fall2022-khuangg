@@ -59,7 +59,6 @@ def get_listings_from_search_results(html_file):
 
     print(searched)
     return searched
-    
 
 
 def get_listing_information(listing_id):
@@ -86,6 +85,13 @@ def get_listing_information(listing_id):
         number of bedrooms
     )
     """
+
+
+    print(listing_id)
+    policy = .find_all('li', class_ = "f19phm7j dir dir-ltr") # ??? since we are given a list, how do we 'get' the tags
+    policy_number = .get('Policy number: ').text
+    
+    return listing_id
     pass
 
 
@@ -181,11 +187,12 @@ class TestCases(unittest.TestCase):
         # check that the variable you saved after calling the function is a list
         self.assertEqual(type(listings), list)
         # check that each item in the list is a tuple
-
+        
         # check that the first title, cost, and listing id tuple is correct (open the search results html and find it)
-
-        # check that the last title is correct (open the search results html and find it)
-        pass
+        self.assertEqual(listings[0], ('Loft in Mission District', 210, '1944564'))
+        # check that the last title is correct (open the search results html and find it
+        self.assertEqual(listings[-1][0], 'Guest suite in Mission District')
+        
 
     def test_get_listing_information(self):
         html_list = ["1623609",
