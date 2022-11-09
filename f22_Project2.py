@@ -100,26 +100,17 @@ def get_listing_information(listing_id):
         pend = ['Pending Application', 'City registration pending', 'pending', 'Pending']
         exem = ['License not needed per OSTR', 'Exempt', 'exempt']
 
-    # for p in policy:
-        # if 'pending' in p.lower():
-        #     p = 'Pending'
+        text = (p.text)
 
-        # if 'exempt' in p.lower():
-        #     p = "Exempt"
+        if text in pend:
+            policy_num.append('Pending')
 
-        # if 'License not needed per OSTR' in p.lower():
-        #     p = 'Exempt'
-
-        if p in pend:
-            p = 'Pending' # printing Pending Application still
-
-        if p in exem:
-            p = 'Exempt'
+        elif text in exem:
+            policy_num.append('Exempt')
 
         else:
-            p = p
 
-        policy_num.append(p.text)
+            policy_num.append(text)
         # print(policy_num)
 
     r_type = soup.find('h2', class_ = '_14i3z6h')
@@ -137,6 +128,10 @@ def get_listing_information(listing_id):
     num_room = soup.find_all('li', class_ = "l7n4lsf dir dir-ltr")
     
     pattern = r'(\d)\sbedrooms*'
+
+
+
+    # check for studio
 
     for room in num_room:
         if 'studio' in room.text.lower():
