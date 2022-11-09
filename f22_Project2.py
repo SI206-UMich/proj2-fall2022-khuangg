@@ -27,9 +27,7 @@ def get_listings_from_search_results(html_file):
     """
 
     file = open(html_file)
-
     soup = BeautifulSoup(file, 'html.parser')
-
     file.close()
 
     place = []
@@ -86,13 +84,77 @@ def get_listing_information(listing_id):
     )
     """
 
+    html_file = f"html_files/listing_{listing_id}.html"
+    file = open(html_file, 'r')
+    soup = BeautifulSoup(file, 'html.parser')
+    file.close()
 
-    print(listing_id)
-    policy = .find_all('li', class_ = "f19phm7j dir dir-ltr") # ??? since we are given a list, how do we 'get' the tags
-    policy_number = .get('Policy number: ').text
+    policy = soup.find('li', class_ = "f19phm7j dir dir-ltr")
+
+    policy_num = []
+    room_type = []
+    bedroom = []
+
+    for p in policy.find_all('span', class_ = 'll4r2nl dir dir-ltr'):
+
+        pend = ['Pending Application', 'City registration pending', 'pending', 'Pending']
+        exem = ['License not needed per OSTR', 'Exempt', 'exempt']
+
+    # for p in policy:
+        # if 'pending' in p.lower():
+        #     p = 'Pending'
+
+        # if 'exempt' in p.lower():
+        #     p = "Exempt"
+
+        # if 'License not needed per OSTR' in p.lower():
+        #     p = 'Exempt'
+
+        if p in pend:
+            p = 'Pending' # printing Pending Application still
+
+        if p in exem:
+            p = 'Exempt'
+
+        else:
+            p = p
+
+        policy_num.append(p.text)
+        # print(policy_num)
+
+    r_type = soup.find('h2', class_ = '_14i3z6h')
+
+    if 'private' in r_type.text.lower():
+        rt = 'Private Room'
+    elif 'shared' in r_type.text.lower():
+        rt = 'Shared Room'
+    else:
+        rt = 'Entire Room'
+
+    room_type.append(rt)
+    # print(room_type)
+
+    num_room = soup.find_all('li', class_ = "l7n4lsf dir dir-ltr")
     
-    return listing_id
-    pass
+    pattern = r'(\d)\sbedrooms*'
+
+    for room in num_room:
+        if 'studio' in room.text.lower():
+            num = 1
+
+        found = re.findall(pattern, str(num_room))
+
+
+        for num in found:
+            found_int = int(num)
+
+    bedroom.append(found_int)
+    # print(bedroom)
+
+    information = tuple(policy_num + room_type + bedroom)
+
+    print(information)
+    return information
 
 
 def get_detailed_listing_database(html_file):
@@ -215,12 +277,12 @@ class TestCases(unittest.TestCase):
             # check that the third element in the tuple is an int
             self.assertEqual(type(listing_information[2]), int)
         # check that the first listing in the html_list has policy number 'STR-0001541'
-
+            self.assertEqual(listing_informations[0][0], 'STR-0001541')
         # check that the last listing in the html_list is a "Private Room"
-
+            self.assertEqual(listing_informations[-1][1], 'Private Room')
         # check that the third listing has one bedroom
+            self.assertEqual(listing_informations[2][-1], 1)
 
-        pass
 
     def test_get_detailed_listing_database(self):
         # call get_detailed_listing_database on "html_files/mission_district_search_results.html"
