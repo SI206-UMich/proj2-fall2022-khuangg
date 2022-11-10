@@ -55,7 +55,7 @@ def get_listings_from_search_results(html_file):
 
     searched = list(zip(place, int_cost, id))
 
-    print(searched)
+    # print(searched)
     return searched
 
 
@@ -97,7 +97,7 @@ def get_listing_information(listing_id):
 
     for p in policy.find_all('span', class_ = 'll4r2nl dir dir-ltr'):
 
-        pend = ['Pending Application', 'City registration pending', 'pending', 'Pending']
+        pend = ['Pending Application', 'City Registration Pending', 'City registration pending', 'pending', 'Pending']
         exem = ['License not needed per OSTR', 'Exempt', 'exempt']
 
         text = (p.text)
@@ -127,8 +127,7 @@ def get_listing_information(listing_id):
 
     num_room = soup.find_all('li', class_ = "l7n4lsf dir dir-ltr")
     
-    pattern = r'(\d)\sbedrooms*'
-
+    pattern = r'(\d)\s*\w*\s*bedrooms*'
 
 
     # check for studio
@@ -136,19 +135,18 @@ def get_listing_information(listing_id):
     for room in num_room:
         if 'studio' in room.text.lower():
             num = 1
+            bedroom.append(num)
 
-        found = re.findall(pattern, str(num_room))
+    found = re.findall(pattern, str(num_room))
 
-
-        for num in found:
-            found_int = int(num)
-
-    bedroom.append(found_int)
+    for number in found:            
+        bedroom.append(int(number))
+    
     # print(bedroom)
 
     information = tuple(policy_num + room_type + bedroom)
 
-    print(information)
+    # print(information)
     return information
 
 
@@ -166,7 +164,17 @@ def get_detailed_listing_database(html_file):
         ...
     ]
     """
-    pass
+    detailed_list = []
+
+    search_results = get_listings_from_search_results(html_file)
+
+    for search in search_results:
+        info = get_listing_information(search[2]) # get listing info
+
+        detailed_list.append(search + info)
+
+    # print(detailed_list)
+    return detailed_list
 
 
 def write_csv(data, filename):
@@ -191,7 +199,20 @@ def write_csv(data, filename):
 
     This function should not return anything.
     """
-    pass
+    with open(filename, 'w') as file:
+
+        writer = csv.writer(file)
+
+        headers = ['Listing Title', 'Cost', 'Listing ID', 'Policy Number', 'Place Type', 'Number of Bedrooms']
+
+        writer.writerow(headers)
+
+        sort = sorted(data, key = lambda x: x[1])
+        print(sort)
+
+        for listing in sort:
+            writer.writerow(listing)
+
 
 
 def check_policy_numbers(data):
@@ -244,7 +265,8 @@ class TestCases(unittest.TestCase):
         # check that the variable you saved after calling the function is a list
         self.assertEqual(type(listings), list)
         # check that each item in the list is a tuple
-        
+        for l in listings:
+            self.assertEqual(type(l), tuple)
         # check that the first title, cost, and listing id tuple is correct (open the search results html and find it)
         self.assertEqual(listings[0], ('Loft in Mission District', 210, '1944564'))
         # check that the last title is correct (open the search results html and find it
@@ -289,14 +311,15 @@ class TestCases(unittest.TestCase):
             # assert each item in the list of listings is a tuple
             self.assertEqual(type(item), tuple)
             # check that each tuple has a length of 6
-
+        for item in detailed_database:
+            self.assertEqual(len(item), 6)
         # check that the first tuple is made up of the following:
         # 'Loft in Mission District', 210, '1944564', '2022-004088STR', 'Entire Room', 1
-
+        self.assertEqual(detailed_database[0], ('Loft in Mission District', 210, '1944564', '2022-004088STR', 'Entire Room', 1))
         # check that the last tuple is made up of the following:
         # 'Guest suite in Mission District', 238, '32871760', 'STR-0004707', 'Entire Room', 1
+        self.assertEqual(detailed_database[-1], ('Guest suite in Mission District', 238, '32871760', 'STR-0004707', 'Entire Room', 1))
 
-        pass
 
     def test_write_csv(self):
         # call get_detailed_listing_database on "html_files/mission_district_search_results.html"
